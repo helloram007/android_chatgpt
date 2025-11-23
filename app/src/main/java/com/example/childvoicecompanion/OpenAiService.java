@@ -10,11 +10,12 @@ import com.openai.model.chat.ChatMessageRole;
 
 import java.io.File;
 
+import okhttp3.OkHttpClient;
+
 public class OpenAiService {
 
     private static final String API_KEY = BuildConfig.OPENAI_API_KEY;
     private OpenAIClient client;
-    private final OkHttpClient httpClient = new OkHttpClient();
 
     public OpenAiService() {
         client = new OpenAIClient(API_KEY);

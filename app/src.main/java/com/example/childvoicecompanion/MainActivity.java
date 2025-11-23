@@ -1,20 +1,20 @@
 package com.example.childvoicecompanion;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
 import android.os.Bundle;
-import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+
 import java.io.IOException;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
     private MediaRecorder mediaRecorder;
     private String fileName;
     private boolean isRecording = false;
-    private TextToSpeech textToSpeech;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,15 +49,6 @@ public class MainActivity extends AppCompatActivity {
                     stopRecording();
                 } else {
                     startRecording();
-                }
-            }
-        });
-
-        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status != TextToSpeech.ERROR) {
-                    textToSpeech.setLanguage(Locale.US);
                 }
             }
         });
@@ -92,31 +82,7 @@ public class MainActivity extends AppCompatActivity {
         mediaRecorder = null;
         isRecording = false;
         Toast.makeText(this, "Recording stopped", Toast.LENGTH_SHORT).show();
-        progressBar.setVisibility(View.VISIBLE);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String transcription = openAiService.getTranscription(fileName);
-                String response = openAiService.getCompletion(transcription);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        responseTextView.setText(response);
-                        progressBar.setVisibility(View.GONE);
-                        textToSpeech.speak(response, TextToSpeech.QUEUE_FLUSH, null);
-                    }
-                });
-            }
-        }).start();
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (textToSpeech != null) {
-            textToSpeech.stop();
-            textToSpeech.shutdown();
-        }
-        super.onDestroy();
+        // TODO: Send the audio file to the OpenAI API
     }
 
     @Override

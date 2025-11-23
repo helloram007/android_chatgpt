@@ -1,8 +1,10 @@
 package com.example.childvoicecompanion;
 
 import com.openai.client.OpenAIClient;
-import com.openai.model.CompletionRequest;
-import com.openai.model.CompletionResponse;
+import com.openai.model.chat.ChatCompletionRequest;
+import com.openai.model.chat.ChatCompletionResponse;
+import com.openai.model.chat.ChatMessage;
+import com.openai.model.chat.ChatMessageRole;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +18,7 @@ import okhttp3.Response;
 
 public class OpenAiService {
 
-    private static final String API_KEY = "YOUR_API_KEY"; // TODO: Replace with your API key
+    private static final String API_KEY = BuildConfig.OPENAI_API_KEY;
     private OpenAIClient client;
     private final OkHttpClient httpClient = new OkHttpClient();
 
@@ -25,14 +27,13 @@ public class OpenAiService {
     }
 
     public String getCompletion(String prompt) {
-        CompletionRequest request = new CompletionRequest.Builder()
-                .prompt(prompt)
-                .model("text-davinci-003")
-                .maxTokens(100)
+        ChatCompletionRequest request = new ChatCompletionRequest.Builder()
+                .model("gpt-3.5-turbo")
+                .addMessage(new ChatMessage(ChatMessageRole.USER, prompt))
                 .build();
         try {
-            CompletionResponse response = client.completions().create(request);
-            return response.getChoices().get(0).getText();
+            ChatCompletionResponse response = client.chatCompletions().create(request);
+            return response.getChoices().get(0).getMessage().getContent();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -59,8 +60,10 @@ public class OpenAiService {
             if (!response.isSuccessful()) {
                 throw new IOException("Unexpected code " + response);
             }
-            return response.body().string();
-        } catch (IOException e) {
+            String responseBody = response.body().string();
+            JSONObject jsonObject = new JSONObject(responseBody);
+            return jsonObject.getString("text");
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }

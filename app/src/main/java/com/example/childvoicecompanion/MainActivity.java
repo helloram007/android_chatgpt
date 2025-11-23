@@ -96,16 +96,26 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String transcription = openAiService.getTranscription(fileName);
-                String response = openAiService.getCompletion(transcription);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        responseTextView.setText(response);
-                        progressBar.setVisibility(View.GONE);
-                        textToSpeech.speak(response, TextToSpeech.QUEUE_FLUSH, null);
-                    }
-                });
+                try {
+                    String transcription = openAiService.getTranscription(fileName);
+                    String response = openAiService.getCompletion(transcription);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            responseTextView.setText(response);
+                            progressBar.setVisibility(View.GONE);
+                            textToSpeech.speak(response, TextToSpeech.QUEUE_FLUSH, null);
+                        }
+                    });
+                } catch (ApiException e) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    });
+                }
             }
         }).start();
     }

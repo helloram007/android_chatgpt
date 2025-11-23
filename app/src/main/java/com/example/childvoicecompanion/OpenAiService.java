@@ -3,18 +3,12 @@ package com.example.childvoicecompanion;
 import com.openai.client.OpenAIClient;
 import com.openai.model.chat.ChatCompletionRequest;
 import com.openai.model.chat.ChatCompletionResponse;
+import com.openai.model.audio.TranscriptionRequest;
+import com.openai.model.audio.TranscriptionResponse;
 import com.openai.model.chat.ChatMessage;
 import com.openai.model.chat.ChatMessageRole;
 
 import java.io.File;
-import java.io.IOException;
-
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class OpenAiService {
 
@@ -26,7 +20,7 @@ public class OpenAiService {
         client = new OpenAIClient(API_KEY);
     }
 
-    public String getCompletion(String prompt) {
+    public String getCompletion(String prompt) throws ApiException {
         ChatCompletionRequest request = new ChatCompletionRequest.Builder()
                 .model("gpt-3.5-turbo")
                 .addMessage(new ChatMessage(ChatMessageRole.USER, prompt))
@@ -35,37 +29,21 @@ public class OpenAiService {
             ChatCompletionResponse response = client.chatCompletions().create(request);
             return response.getChoices().get(0).getMessage().getContent();
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new ApiException("Error getting completion: " + e.getMessage());
         }
     }
 
-    public String getTranscription(String filePath) {
+    public String getTranscription(String filePath) throws ApiException {
         try {
             File file = new File(filePath);
-            RequestBody requestBody = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("file", file.getName(),
-                            RequestBody.create(MediaType.parse("audio/mpeg"), file))
-                    .addFormDataPart("model", "whisper-1")
+            TranscriptionRequest request = new TranscriptionRequest.Builder()
+                    .file(file)
+                    .model("whisper-1")
                     .build();
-
-            Request request = new Request.Builder()
-                    .url("https://api.openai.com/v1/audio/transcriptions")
-                    .header("Authorization", "Bearer " + API_KEY)
-                    .post(requestBody)
-                    .build();
-
-            Response response = httpClient.newCall(request).execute();
-            if (!response.isSuccessful()) {
-                throw new IOException("Unexpected code " + response);
-            }
-            String responseBody = response.body().string();
-            JSONObject jsonObject = new JSONObject(responseBody);
-            return jsonObject.getString("text");
+            TranscriptionResponse response = client.audio().transcriptions().create(request);
+            return response.getText();
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new ApiException("Error getting transcription: " + e.getMessage());
         }
     }
 }

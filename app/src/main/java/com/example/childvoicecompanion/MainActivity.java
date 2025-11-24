@@ -121,6 +121,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        if (mediaRecorder != null) {
+            mediaRecorder.release();
+            mediaRecorder = null;
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         if (textToSpeech != null) {
             textToSpeech.stop();

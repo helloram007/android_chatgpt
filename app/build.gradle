@@ -11,6 +11,7 @@ if (localPropertiesFile.exists()) {
 def openaiApiKey = localProperties.getProperty('openai.apiKey')
 
 android {
+    namespace "com.example.childvoicecompanion"
     compileSdkVersion 34
     buildToolsVersion "34.0.0"
 

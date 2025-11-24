@@ -11,6 +11,7 @@ if (localPropertiesFile.exists()) {
 def openaiApiKey = localProperties.getProperty('openai.apiKey')
 
 android {
+    namespace "com.example.childvoicecompanion"
     compileSdkVersion 34
     buildToolsVersion "34.0.0"
 
@@ -30,6 +31,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    buildFeatures {
+        buildConfig true
     }
 }
 
